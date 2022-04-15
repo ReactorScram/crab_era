@@ -1,54 +1,49 @@
-use std::{
-	time::SystemTime,
+use chrono::{
+	NaiveDateTime,
+	Utc,
 };
-use chrono::NaiveDateTime;
+use crab_era::*;
 
 fn main () {
-	println! ("We are in Year {} C.E. (Crab Era)", year_of_the_crab ());
-}
-
-// In the style of the `epochs` crate.
-
-pub fn crab (num: i64) -> Option <NaiveDateTime> {
-	// Convert to legacy Unix time so we can keep using chrono a few more years
-	let unix_time = num.checked_sub (UNIX_EPOCH)?;
+	let now = Utc::now ().naive_utc ();
+	let c = to_crab (now);
+	let year = year_of_the_crab (now);
 	
-	Some (NaiveDateTime::from_timestamp (unix_time, 0))
-}
-
-// Not stable yet
-
-fn year_of_the_crab () -> i64 {
-	second_of_the_crab () / 86400 / 365
-}
-
-fn second_of_the_crab () -> i64 {
-	let now = SystemTime::now ();
+	println! ("The Crab Epoch is {}", c);
+	println! ("We are in Year {} C.E. (Crab Era)", year);
 	
-	now.duration_since (SystemTime::UNIX_EPOCH).unwrap ().as_secs () as i64 + UNIX_EPOCH
+	match year {
+		6 => println! ("Attend eagerly Year 7 C.E., on 2022-05-12T03:07:00-00:00!!"),
+		7 => {
+			println! ("Happy Year 7 C.E.!");
+			println! ("Attend eagerly Year 8 C.E., on 2023-05-12T03:07:00-00:00!!");
+		},
+		8 => {
+			println! ("Happy Year 8 C.E.!");
+			println! ("Do not attend anything eagerly!");
+		}
+		_ => {},
+	}
 }
 
-/// Offset of the Unix epoch, in crab time.
-const UNIX_EPOCH: i64 = -1431572820;
+fn year_of_the_crab (ndt: NaiveDateTime) -> i64 {
+	to_crab (ndt) / 86400 / 365
+}
 
 #[cfg (test)]
 mod tests {
 	#[test]
-	fn establish_doctrine () {
-		let date = chrono::DateTime::parse_from_rfc3339 ("2015-05-14T03:07:00-00:00").unwrap ();
-		
-		assert_eq! (-super::UNIX_EPOCH, date.timestamp ());
-	}
-	
-	#[test]
-	fn verify_doctrine_against_dogma () {
-		use chrono::{
-			DateTime,
-			Utc,
-		};
-		
-		let date = DateTime::<Utc>::from_utc (super::crab (0).unwrap (), Utc);
-		
-		assert_eq! (date.to_rfc3339 (), "2015-05-14T03:07:00+00:00");
+	fn reckon_by_the_stars () {
+		for (input, expected) in [
+			("2022-05-12T03:06:00-00:00", 6),
+			("2022-05-12T03:08:00-00:00", 7),
+			
+			("2023-05-12T03:06:00-00:00", 7),
+			("2023-05-12T03:08:00-00:00", 8),
+		].into_iter () {
+			let input = chrono::DateTime::parse_from_rfc3339 (input).unwrap ()
+			.naive_utc ();
+			assert_eq! (super::year_of_the_crab (input), expected);
+		}
 	}
 }
