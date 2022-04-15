@@ -22,3 +22,5 @@ let roundtripped = crab (c).unwrap ();
 assert_eq! (c, 218406860);
 assert_eq! (DateTime::<Utc>::from_utc (roundtripped, Utc).to_rfc3339 (), t_3339);
 ```
+
+_Made by 🦀 with 🦀 for 🦀 to 🦀_
